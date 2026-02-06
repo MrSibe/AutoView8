@@ -87,7 +87,34 @@ echo ✅ Patch applied successfully
 
 REM 配置构建
 echo =====[ Configuring V8 Build ]=====
-call python tools\dev\v8gen.py x64.release -vv -- target_os="""win""" target_cpu="""x64""" is_component_build=false is_debug=false use_custom_libcxx=false v8_monolithic=true v8_static_library=true v8_enable_disassembler=true v8_enable_object_print=true v8_use_external_startup_data=false dcheck_always_on=false symbol_level=0 is_clang=true %BUILD_ARGS%
+REM 第一步：创建基础配置
+call python tools\dev\v8gen.py x64.release
+
+REM 第二步：编辑 args.gn 文件
+echo =====[ Writing build configuration to args.gn ]=====
+(
+echo target_os = "win"
+echo target_cpu = "x64"
+echo is_component_build = false
+echo is_debug = false
+echo use_custom_libcxx = false
+echo v8_monolithic = true
+echo v8_static_library = true
+echo v8_enable_disassembler = true
+echo v8_enable_object_print = true
+echo v8_use_external_startup_data = false
+echo dcheck_always_on = false
+echo symbol_level = 0
+echo is_clang = true
+) > out.gn\x64.release\args.gn
+
+REM 如果有额外的构建参数，追加到 args.gn
+if not "%BUILD_ARGS%"=="" (
+    echo %BUILD_ARGS% >> out.gn\x64.release\args.gn
+)
+
+echo Build configuration:
+type out.gn\x64.release\args.gn
 
 REM 构建 V8 静态库
 echo =====[ Building V8 Monolith ]=====
